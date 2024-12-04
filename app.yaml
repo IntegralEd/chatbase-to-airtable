@@ -9,4 +9,4 @@ env_variables:
   CHATBOT_ID: "GLw23CNLr_KSGrkdx3qhv"
   AIRTABLE_BASE_ID: "appEOgvEOwRnq2pIG"
   AIRTABLE_TABLE_NAME: "tblGR3GlnfuWFNKOE"
-  PORT: "8080"
+  PORT: 8080
