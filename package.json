@@ -8,3 +8,4 @@
     "express-rate-limit": "^7.4.1",
     "node-fetch": "^3.3.2"
   }
+}
