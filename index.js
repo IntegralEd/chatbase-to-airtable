@@ -1,7 +1,9 @@
+import fetch from 'node-fetch';
+import express from 'express';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
 
-const express = require('express');
-const bodyParser = require('body-parser');
-const fetch = require('node-fetch');
+dotenv.config();
 
 const app = express();
 
@@ -52,8 +54,8 @@ async function fetchConversations(startDate, endDate, filteredSources, page = 1,
 }
 
 app.post('/', async (req, res) => {
-  const data = req.body; // Parse JSON directly from the request body
-
+  const data = req.body;
+  
   // Basic input validation
   if (!data.email || !data.environmentalWhy || !data.whatIBring || !data.whatMotivatesMe || !data.whatEarthNeeds) {
     console.error('Missing fields in request:', data);
@@ -94,28 +96,18 @@ app.post('/', async (req, res) => {
       body: JSON.stringify(airtableData),
     });
 
-    if (response.ok) {
-      console.log('Data successfully sent to Airtable.');
-      res.status(200).send('Data successfully sent to Airtable.');
-    } else {
-      console.error('Failed to send data to Airtable:', response.statusText);
-      res.status(500).send('Failed to send data to Airtable.');
+    if (!response.ok) {
+      console.error(`Failed to send data to Airtable: ${response.statusText}`);
+      throw new Error('Failed to send data to Airtable');
     }
+
+    console.log('Data successfully sent to Airtable');
+    res.status(200).send('Data successfully sent to Airtable.');
   } catch (error) {
-    console.error('Error processing webhook:', error);
-    res.status(500).send('Internal Server Error');
+    console.error('Error sending data to Airtable:', error);
+    res.status(500).send('Failed to process the request.');
   }
 });
 
-// Start the server and bind to PORT
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-
-  // Example: Fetch conversations for the chatbot
-  const startDate = '2024-01-01';
-  const endDate = '2024-01-31';
-  fetchConversations(startDate, endDate).catch(error => {
-    console.error('Error during conversation fetch:', error);
-  });
-});
+// Export for Cloud Functions
+export const chatbaseToAirtable = app;
