@@ -1,17 +1,20 @@
-import fetch from 'node-fetch'; // Import fetch for making HTTP requests
-import express from 'express';   // Import express for creating server
-import dotenv from 'dotenv';     // Import dotenv for environment variables
+import express from 'express';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import fetch from 'node-fetch';
 
-// Load environment variables from .env file
 dotenv.config();
 
 const app = express();
-app.use(express.json()); // Use built-in express JSON parsing
+app.use(bodyParser.json());
 
-// Environment variables
-const { CHATBASE_API_KEY, CHATBOT_ID, AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME, PORT = 8080 } = process.env;
+const CHATBASE_API_KEY = process.env.CHATBASE_API_KEY;
+const CHATBOT_ID = process.env.CHATBOT_ID;
+const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME;
 
-// Function to fetch conversations from Chatbase
+// Fetch conversations from Chatbase (example)
 async function fetchConversations(startDate, endDate, filteredSources, page = 1, size = 10) {
   const queryParams = new URLSearchParams({
     chatbotId: CHATBOT_ID,
@@ -20,79 +23,83 @@ async function fetchConversations(startDate, endDate, filteredSources, page = 1,
     filteredSources,
     page: page.toString(),
     size: size.toString(),
-  });
+  }).toString();
+
+  const url = `https://www.chatbase.co/api/v1/get-conversations?${queryParams}`;
 
   try {
-    const response = await fetch(`https://www.chatbase.co/api/v1/get-conversations?${queryParams}`, {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${CHATBASE_API_KEY}`,
+        'Authorization': `Bearer ${CHATBASE_API_KEY}`,
         'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      console.error(`Failed to fetch conversations: ${response.statusText}`);
-      return [];
+      throw new Error(`Chatbase API Error: ${response.statusText}`);
     }
 
     const data = await response.json();
-    return data.data ?? []; // Return the data if present, otherwise return an empty array
-
+    return data.data;
   } catch (error) {
     console.error('Error fetching conversations:', error);
-    return []; // Return an empty array on error to prevent further issues
+    throw error;
   }
 }
 
-// Endpoint for Airtable Integration
-app.post('/', async (req, res) => {
-  const { email, environmentalWhy, whatIBring, whatMotivatesMe, whatEarthNeeds } = req.body;
-
-  // Input validation
-  if (!email || !environmentalWhy || !whatIBring || !whatMotivatesMe || !whatEarthNeeds) {
-    console.error('Missing fields in request:', req.body);
-    return res.status(400).send('Missing required fields in request body.');
-  }
-
-  // Prepare Airtable data
+// Send data to Airtable (example)
+async function sendDataToAirtable(data) {
+  const airtableBaseUrl = `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`;
   const airtableData = {
     fields: {
-      email,
-      Environmental_Why: environmentalWhy,
-      What_I_Bring: whatIBring,
-      What_Motivates_Me: whatMotivatesMe,
-      What_Earth_Needs: whatEarthNeeds,
+      email: data.email,
+      Environmental_Why: data.environmentalWhy,
+      What_I_Bring: data.whatIBring,
+      What_Motivates_Me: data.whatMotivatesMe,
+      What_Earth_Needs: data.whatEarthNeeds,
     },
   };
 
   try {
-    // Send data to Airtable
-    const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
+    const response = await fetch(airtableBaseUrl, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${AIRTABLE_API_KEY}`,
+        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(airtableData),
     });
 
     if (!response.ok) {
-      console.error(`Failed to send data to Airtable: ${response.statusText}`);
-      return res.status(500).send('Failed to send data to Airtable.');
+      throw new Error(`Airtable API Error: ${response.statusText}`);
     }
 
     console.log('Data successfully sent to Airtable');
-    res.status(200).send('Data successfully sent to Airtable.');
   } catch (error) {
     console.error('Error sending data to Airtable:', error);
+    throw error;
+  }
+}
+
+// Endpoint for Airtable Integration
+app.post('/', async (req, res) => {
+  const data = req.body;
+
+  if (!data.email || !data.environmentalWhy || !data.whatIBring || !data.whatMotivatesMe || !data.whatEarthNeeds) {
+    return res.status(400).send('Missing required fields in request body.');
+  }
+
+  try {
+    await sendDataToAirtable(data);
+    res.status(200).send('Data successfully sent to Airtable.');
+  } catch (error) {
     res.status(500).send('Failed to process the request.');
   }
 });
 
 // Start server
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
-export default app; // Export app if using Cloud Functions
