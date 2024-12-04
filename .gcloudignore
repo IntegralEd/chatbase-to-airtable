@@ -10,7 +10,23 @@
 # If you would like to upload your .git directory, .gitignore file or files
 # from your .gitignore file, remove the corresponding line
 # below:
-.git
-.gitignore
+# Environment variables
+.env
+.env.local
+.env.*.local
 
-node_modules
+# Dependencies
+/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE/Editor specific
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
