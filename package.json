@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "chatbase-to-airtable",
   "version": "1.0.0",
   "dependencies": {
