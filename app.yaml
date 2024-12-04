@@ -4,8 +4,8 @@ entrypoint: node index.js
 
 
 env_variables:
-  CHATBASE_API_KEY: "{{ gcloud secrets versions access latest --secret=943716ed-b316-4a04-a9c0-ca510647640c }}"
-  AIRTABLE_API_KEY: "{{ gcloud secrets versions access latest --secret=patppPmnIuHfYoiRM}}"
-  CHATBOT_ID: "{{ gcloud secrets versions access latest --secret=GLw23CNLr_KSGrkdx3qhv }}"
-  AIRTABLE_BASE_ID: "{{ gcloud secrets versions access latest --secret=appEOgvEOwRnq2pIG }}"
-  AIRTABLE_TABLE_NAME: "{{ gcloud secrets versions access latest --secret=tblGR3GlnfuWFNKOE}}"
+  CHATBASE_API_KEY: "943716ed-b316-4a04-a9c0-ca510647640c"
+  AIRTABLE_API_KEY: "patppPmnIuHfYoiRM"
+  CHATBOT_ID: "GLw23CNLr_KSGrkdx3qhv"
+  AIRTABLE_BASE_ID: "appEOgvEOwRnq2pIG"
+  AIRTABLE_TABLE_NAME: "tblGR3GlnfuWFNKOE"
