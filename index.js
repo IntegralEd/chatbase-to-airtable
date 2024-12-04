@@ -92,7 +92,7 @@ app.post('/', async (req, res) => {
     const response = await fetch(airtableBaseUrl, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${airtableApiKey}`,
+        Authorization: `Bearer ${airtableApiKey}`, // Correctly using Airtable PAT here
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(airtableData),
