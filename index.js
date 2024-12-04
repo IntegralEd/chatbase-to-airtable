@@ -1,7 +1,7 @@
-const fetch = require('node-fetch');
-const express = require('express');
-const bodyParser = require('body-parser');
-const dotenv = require('dotenv');
+import express from 'express';
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import fetch from 'node-fetch';
 
 dotenv.config();
 
@@ -12,47 +12,6 @@ app.use(bodyParser.json());
 
 const CHATBASE_API_KEY = process.env.CHATBASE_API_KEY;
 const CHATBOT_ID = process.env.CHATBOT_ID;
-
-// Async Function for Fetching Conversations from Chatbase
-async function fetchConversations(startDate, endDate, filteredSources, page = 1, size = 10) {
-  const queryParams = new URLSearchParams({
-    chatbotId: CHATBOT_ID,
-    startDate,
-    endDate,
-    filteredSources,
-    page: page.toString(),
-    size: size.toString(),
-  }).toString();
-
-  try {
-    const response = await fetch(`https://www.chatbase.co/api/v1/get-conversations?${queryParams}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${CHATBASE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      console.error(`Failed to fetch conversations: ${response.statusText}`);
-      throw new Error('Failed to fetch conversations');
-    }
-
-    const data = await response.json();
-    console.log('Conversations:', data);
-
-    // Check if there are more pages of results
-    if (data.data && data.data.length === size) {
-      const nextPageData = await fetchConversations(startDate, endDate, filteredSources, page + 1, size);
-      return data.data.concat(nextPageData);
-    }
-
-    return data.data;
-  } catch (error) {
-    console.error('Error fetching conversations:', error);
-    throw error;
-  }
-}
 
 // Endpoint for Airtable Integration
 app.post('/', async (req, res) => {
@@ -92,14 +51,15 @@ app.post('/', async (req, res) => {
     const response = await fetch(airtableBaseUrl, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${airtableApiKey}`, // Correctly using Airtable PAT here
+        Authorization: `Bearer ${airtableApiKey}`, // Ensure this is correct and updated to use PAT
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(airtableData),
     });
 
     if (!response.ok) {
-      console.error(`Failed to send data to Airtable: ${response.statusText}`);
+      const errorText = await response.text();
+      console.error(`Failed to send data to Airtable: ${errorText}`);
       throw new Error('Failed to send data to Airtable');
     }
 
@@ -118,4 +78,4 @@ app.listen(PORT, () => {
 });
 
 // Export for Cloud Functions (if needed)
-module.exports = app;
+export default app;
