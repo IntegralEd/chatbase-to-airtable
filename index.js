@@ -109,5 +109,12 @@ app.post('/', async (req, res) => {
   }
 });
 
-// Export for Cloud Functions
+// Add the port listener for Google App Engine
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+// Export for Cloud Functions (if needed)
 export const chatbaseToAirtable = app;
+
