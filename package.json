@@ -3,9 +3,8 @@
   "name": "chatbase-to-airtable",
   "version": "1.0.0",
   "dependencies": {
-    "body-parser": "^1.20.3", 
     "express": "^4.21.1",
-    "express-rate-limit": "^7.4.1",
-    "node-fetch": "^3.3.2"
+    "dotenv": "^16.0.3",
+    "node-fetch": "^2.6.7"
   }
 }
